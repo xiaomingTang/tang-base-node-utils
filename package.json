@@ -1,0 +1,12 @@
+{
+  "name": "tang-base-node-utils",
+  "version": "1.0.0",
+  "description": "node utils",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["node", "utils"],
+  "author": "1038761793@qq.com",
+  "license": "ISC"
+}
