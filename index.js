@@ -102,16 +102,15 @@ class File extends Base {
       encoding,
       flag,
     })
+    return this
   }
   
   write(content, encoding) {
-    this.__write(content, "w", encoding)
-    return this
+    return this.__write(content, "w", encoding)
   }
 
   aWrite(content, encoding) {
-    this.__write(content, "a", encoding)
-    return this
+    return this.__write(content, "a", encoding)
   }
 
   moveTo(newPath) {
@@ -239,7 +238,6 @@ class Dir extends Base {
     return result
   }
 }
-
 
 class Json extends File {
   constructor(str) {

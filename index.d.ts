@@ -1,6 +1,6 @@
 import * as fs from "fs"
 
-class Base {
+export class Base {
   constructor(path: string);
 
   readonly path: string;
@@ -16,7 +16,7 @@ class Base {
   sibling(basename: string): Base;
 }
 
-class File extends Base {
+export class File extends Base {
   constructor(path: string);
 
   readonly suffix: string;
@@ -30,7 +30,7 @@ class File extends Base {
   toJsonData(): object;
 }
 
-class Dir extends Base {
+export class Dir extends Base {
   constructor(path: string);
 
   readonly suffix: string;
@@ -48,33 +48,21 @@ class Dir extends Base {
   toJsonData(): object;
 }
 
-class Json extends File {
+export class Json extends File {
   constructor(path: string);
 
   readSync(encoding?: string): string;
-  writeSync(data: string | array | object, space: number, encoding?: string): Json;
+  writeSync(data: string | any[] | object, space: number, encoding?: string): Json;
 }
 
-function question(queryStr: string, defaultValue?: string): string;
+export function question(queryStr: string, defaultValue?: string): string;
 
-function validFunc(input: string): boolean;
+type validFunc = (input: string) => boolean;
 
-function questionUntil(queryStr: string, func: validFunc): string;
+export function questionUntil(queryStr: string, func: validFunc): string;
 
-function questionNumber(queryStr: string, defaultValue?: number): string;
+export function questionNumber(queryStr: string, defaultValue?: number): string;
 
-function refreshProp(obj: object, propName: string): void;
+export function refreshProp(obj: object, propName: string): void;
 
-function enumerate(arr: array): [any, number][]
-
-module.exports = {
-  Base,
-  File,
-  Dir,
-  Json,
-  question,
-  questionUntil,
-  questionNumber,
-  refreshProp,
-  enumerate,
-}
+export function enumerate(arr: any[]): [any, number][]
