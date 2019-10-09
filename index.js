@@ -214,7 +214,7 @@ class Dir extends Base {
     return this
   }
 
-  remove() {
+  async remove() {
     if ((await question(`将会删除【${this.path}】整个目录及其子目录, 是否确定[y / n]?`)).toLowerCase() === "y") {
       fs.rmdirSync(this.path, {
         recursive: true,
@@ -261,6 +261,10 @@ class Json extends File {
   }
 }
 
+function isEmpty(s) {
+  return s === null || s === undefined
+}
+
 function __queryInput(queryStr) {
   return new Promise((resolve, reject) => {
     const rl = readline.createInterface({
@@ -269,22 +273,24 @@ function __queryInput(queryStr) {
     })
 
     rl.question(queryStr, (answer) => {
-      resolve(answer.trim())
+      resolve(answer)
       rl.close()
     });
   })
 }
 
 async function question(queryStr, defaultValue) {
-  const inputStr = await __queryInput(queryStr)
+  const noDefaultValue = isEmpty(defaultValue)
+  const prompt = noDefaultValue ? queryStr : `${queryStr}, 缺省值【${defaultValue}】: `
+  const inputStr = await __queryInput(prompt)
 
-  if (defaultValue === undefined) {
+  if (noDefaultValue) { // 无默认值
     if (inputStr === "") {
-      return question(queryStr, defaultValue)
+      return question(queryStr)
     } else {
       return inputStr
     }
-  } else {
+  } else { // 有默认值
     if (inputStr === "") {
       return defaultValue
     } else {
@@ -301,9 +307,12 @@ async function questionUntil(queryStr, f) {
   return questionUntil(queryStr, f)
 }
 
-async function questionNumber(queryStr, defaultValue) {
-  assert(typeof(defaultValue) === "number", `${defaultValue} is not number`)
-  const defaultStr = `${defaultValue}`
+function questionNumber(queryStr, defaultValue) {
+  assert(
+    isEmpty(defaultValue) || (typeof(defaultValue) === "number"),
+    `${defaultValue} is not number`
+  )
+  const defaultStr = isEmpty(defaultValue) ? undefined : `${defaultValue}`
 
   return new Promise(async (resolve, reject) => {
     let input = ""

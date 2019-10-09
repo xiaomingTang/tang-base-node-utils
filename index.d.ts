@@ -55,13 +55,13 @@ export class Json extends File {
   writeSync(data: string | any[] | object, space: number, encoding?: string): Json;
 }
 
-export function question(queryStr: string, defaultValue?: string): string;
+export function question(queryStr: string, defaultValue?: string): Promise<string>;
 
 type validFunc = (input: string) => boolean;
 
-export function questionUntil(queryStr: string, func: validFunc): string;
+export function questionUntil(queryStr: string, func: validFunc): Promise<string>;
 
-export function questionNumber(queryStr: string, defaultValue?: number): string;
+export function questionNumber(queryStr: string, defaultValue?: number): Promise<number>;
 
 export function refreshProp(obj: object, propName: string): void;
 
