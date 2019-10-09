@@ -44,7 +44,8 @@ export class Dir extends Base {
   readonly fileNames: string[];
   readonly dirNames: string[];
   moveTo(newPath: string): File;
-  remove(): Base;
+  remove(): Promise<Base>;
+  dangerousRemoveWithoutEnsure: Base;
   toJsonData(): object;
 }
 

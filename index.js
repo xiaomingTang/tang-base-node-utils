@@ -214,14 +214,25 @@ class Dir extends Base {
     return this
   }
 
-  async remove() {
-    if ((await question(`将会删除【${this.path}】整个目录及其子目录, 是否确定[y / n]?`)).toLowerCase() === "y") {
-      fs.rmdirSync(this.path, {
-        recursive: true,
+  remove(defaultPrompt) {
+    return new Promise((resolve, reject) => {
+      question(`将会删除【${this.path}】整个目录及其子目录, 是否确定[y / n]?`, defaultPrompt).then(ans => {
+        if (ans.toLowerCase() === "y") {
+          fs.rmdirSync(this.path, {
+            recursive: true,
+          })
+          resolve(new Base(this.path))
+        }
+        reject(new Error("您手动取消了删除目录"))
       })
-      return new Base(this.path)
-    }
-    return this
+    })
+  }
+
+  dangerousRemoveWithoutEnsure() {
+    fs.rmdirSync(this.path, {
+      recursive: true,
+    })
+    return new Base(this.path)
   }
 
   toJsonData() {
