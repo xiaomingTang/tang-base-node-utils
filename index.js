@@ -4,12 +4,12 @@ const readline = require("readline")
 const assert = require('assert')
 
 class Base {
-  constructor(str) {
-    this.originData = str
+  constructor(...paths) {
+    this.originData = [...paths]
   }
 
   get path() {
-    return path.resolve(this.originData)
+    return path.resolve(...this.originData)
   }
 
   get dirname() {
@@ -73,8 +73,8 @@ class Base {
 }
 
 class File extends Base {
-  constructor(str) {
-    super(str)
+  constructor(...paths) {
+    super(...paths)
     assert(this.isFile, `${this.path} is not file`)
   }
 
@@ -115,7 +115,7 @@ class File extends Base {
 
   moveTo(newPath) {
     fs.renameSync(this.path, newPath)
-    this.originData = newPath
+    this.originData = [newPath]
     return this
   }
 
@@ -133,8 +133,8 @@ class File extends Base {
 }
 
 class Dir extends Base {
-  constructor(str) {
-    super(str)
+  constructor(...paths) {
+    super(...paths)
     assert(this.isDir, `${this.path} is not dir`)
   }
 
@@ -210,12 +210,12 @@ class Dir extends Base {
 
   moveTo(newPath) {
     fs.renameSync(this.path, newPath)
-    this.originData = newPath
+    this.originData = [newPath]
     return this
   }
 
   remove() {
-    if (question(`将会删除【${this.path}】整个目录及其子目录, 是否确定[y / n]?`).toLowerCase() === "y") {
+    if ((await question(`将会删除【${this.path}】整个目录及其子目录, 是否确定[y / n]?`)).toLowerCase() === "y") {
       fs.rmdirSync(this.path, {
         recursive: true,
       })
@@ -240,8 +240,8 @@ class Dir extends Base {
 }
 
 class Json extends File {
-  constructor(str) {
-    super(str)
+  constructor(...paths) {
+    super(...paths)
   }
 
   readSync(encoding="utf8") {
@@ -280,7 +280,7 @@ async function question(queryStr, defaultValue) {
 
   if (defaultValue === undefined) {
     if (inputStr === "") {
-      return await question(queryStr, defaultValue)
+      return question(queryStr, defaultValue)
     } else {
       return inputStr
     }
@@ -298,7 +298,7 @@ async function questionUntil(queryStr, f) {
   if (f(inputStr)) {
     return inputStr
   }
-  return await questionUntil(queryStr, f)
+  return questionUntil(queryStr, f)
 }
 
 async function questionNumber(queryStr, defaultValue) {

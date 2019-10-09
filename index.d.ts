@@ -1,7 +1,7 @@
 import * as fs from "fs"
 
 export class Base {
-  constructor(path: string);
+  constructor(...paths: string[]);
 
   readonly path: string;
   readonly dirname: string;
@@ -17,7 +17,7 @@ export class Base {
 }
 
 export class File extends Base {
-  constructor(path: string);
+  constructor(...paths: string[]);
 
   readonly suffix: string;
   readonly name: string;
@@ -31,7 +31,7 @@ export class File extends Base {
 }
 
 export class Dir extends Base {
-  constructor(path: string);
+  constructor(...paths: string[]);
 
   readonly suffix: string;
   readonly name: string;
@@ -49,9 +49,9 @@ export class Dir extends Base {
 }
 
 export class Json extends File {
-  constructor(path: string);
+  constructor(...paths: string[]);
 
-  readSync(encoding?: string): string;
+  readSync(encoding?: string): any;
   writeSync(data: string | any[] | object, space: number, encoding?: string): Json;
 }
 
