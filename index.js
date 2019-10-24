@@ -327,7 +327,7 @@ function questionNumber(queryStr, defaultValue) {
 
   return new Promise(async (resolve, reject) => {
     let input = ""
-    while(!/^\d+(\.\d+)?$/.test(input)) {
+    while(!/^[\+\-]?\d+(\.\d+)?$/.test(input)) {
       input = await question(queryStr, defaultStr)
     }
     resolve(+input)
@@ -344,6 +344,12 @@ function enumerate(arr) {
   return arr.map((item, i) => [item, i])
 }
 
+function forRun(arr, func) {
+  for (let i = 0, len = arr.length; i < len; i++) {
+    func(arr[i], i, arr)
+  }
+}
+
 module.exports = {
   Base,
   File,
@@ -354,4 +360,5 @@ module.exports = {
   questionNumber,
   refreshProp,
   enumerate,
+  forRun,
 }

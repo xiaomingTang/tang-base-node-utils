@@ -58,12 +58,12 @@ export class Json extends File {
 
 export function question(queryStr: string, defaultValue?: string): Promise<string>;
 
-type validFunc = (input: string) => boolean;
-
-export function questionUntil(queryStr: string, func: validFunc): Promise<string>;
+export function questionUntil(queryStr: string, func: (input: string) => boolean): Promise<string>;
 
 export function questionNumber(queryStr: string, defaultValue?: number): Promise<number>;
 
 export function refreshProp(obj: object, propName: string): void;
 
 export function enumerate(arr: any[]): [any, number][]
+
+export function forRun<T>(arr: T[], handleForFunc: (value: T, index: number, array: T[]) => void)
