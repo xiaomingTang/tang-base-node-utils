@@ -97,6 +97,36 @@ class File extends Base {
     })
   }
 
+  async handleLineByLine(func) {
+    const rl = readline.createInterface({
+      input: fs.createReadStream(this.path),
+      crlfDelay: Infinity,
+    })
+    let doContinue = true
+    const close = () => doContinue = false
+    let lineIdx = 0
+    for await (const line of rl) {
+      if (doContinue) {
+        func(line, lineIdx, close)
+        lineIdx += 1
+      } else {
+        break
+      }
+    }
+  }
+
+  async handleEveryLine(func) {
+    const rl = readline.createInterface({
+      input: fs.createReadStream(this.path),
+      crlfDelay: Infinity,
+    })
+    let lineIdx = 0
+    for await (const line of rl) {
+      func(line, lineIdx)
+      lineIdx += 1
+    }
+  }
+
   __write(content, flag="w", encoding="utf8") {
     fs.writeFileSync(this.path, content, {
       encoding,

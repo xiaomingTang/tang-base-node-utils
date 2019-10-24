@@ -23,6 +23,8 @@ export class File extends Base {
   readonly name: string;
   readonly parent: Dir;
   read(encoding?: string): string;
+  handleLineByLine(func: (lineStr: str, lineIdx: number, close: () => void) => void): void;
+  handleEveryLine(func: (lineStr: str, lineIdx: number) => void): void;
   write(content: string, encoding?: string): File;
   aWrite(content: string, encoding?: string): File;
   moveTo(newPath: string): File;
