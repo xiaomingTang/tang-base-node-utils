@@ -144,6 +144,7 @@ class File extends Base {
   }
 
   moveTo(newPath) {
+    new Base(newPath).parent.createAsDir()
     fs.renameSync(this.path, newPath)
     this.originData = [newPath]
     return this
@@ -239,6 +240,7 @@ class Dir extends Base {
   }
 
   moveTo(newPath) {
+    new Base(newPath).parent.createAsDir()
     fs.renameSync(this.path, newPath)
     this.originData = [newPath]
     return this
@@ -374,9 +376,9 @@ function enumerate(arr) {
   return arr.map((item, i) => [item, i])
 }
 
-function forRun(arr, func) {
+async function forRun(arr, func) {
   for (let i = 0, len = arr.length; i < len; i++) {
-    func(arr[i], i, arr)
+    await func(arr[i], i, arr)
   }
 }
 
