@@ -23,8 +23,8 @@ export class File extends Base {
   readonly name: string;
   readonly parent: Dir;
   read(encoding?: string): string;
-  handleLineByLine(func: (lineStr: string, lineIdx: number, close: () => void) => void): void;
-  handleEveryLine(func: (lineStr: string, lineIdx: number) => void): void;
+  handleLineByLine(func: (lineStr: string, lineIdx: number, close: () => void) => void): promise<void>;
+  handleEveryLine(func: (lineStr: string, lineIdx: number) => void): promise<void>;
   write(content: string, encoding?: string): File;
   aWrite(content: string, encoding?: string): File;
   moveTo(newPath: string): File;
@@ -66,6 +66,6 @@ export function questionNumber(queryStr: string, defaultValue?: number): Promise
 
 export function refreshProp(obj: object, propName: string): void;
 
-export function enumerate(arr: any[]): [any, number][]
+export function enumerate(arr: any[]): [any, number][];
 
-export function forRun<T>(arr: T[], handleForFunc: (value: T, index: number, array: T[]) => void)
+export function forRun<T>(arr: T[], handleForFunc: (value: T, index: number, array: T[]) => void): Promise<void>;
