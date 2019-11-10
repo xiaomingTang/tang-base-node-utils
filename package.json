@@ -1,6 +1,6 @@
 {
   "name": "tang-base-node-utils",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "自用的一些node语法糖",
   "main": "index.js",
   "scripts": {
