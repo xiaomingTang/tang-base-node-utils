@@ -23,8 +23,8 @@ export class File extends Base {
   readonly name: string;
   readonly parent: Dir;
   read(encoding?: string): string;
-  handleLineByLine(func: (lineStr: string, lineIdx: number, close: () => void) => void): promise<void>;
-  handleEveryLine(func: (lineStr: string, lineIdx: number) => void): promise<void>;
+  handleLineByLine(func: (lineStr: string, lineIdx: number, close: () => void) => void): Promise<void>;
+  handleEveryLine(func: (lineStr: string, lineIdx: number) => void): Promise<void>;
   write(content: string, encoding?: string): File;
   aWrite(content: string, encoding?: string): File;
   moveTo(newPath: string): File;
