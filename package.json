@@ -1,6 +1,6 @@
 {
   "name": "tang-base-node-utils",
-  "version": "1.0.10",
+  "version": "1.1.0",
   "description": "自用的一些node语法糖",
   "main": "./dist/index.js",
   "author": "1038761793@qq.com",
