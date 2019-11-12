@@ -1,10 +1,24 @@
-const fs = require("fs")
-const path = require("path")
-const readline = require("readline")
-const assert = require('assert')
+/* eslint-disable max-classes-per-file */
+import * as fs from "fs"
+import * as path from "path"
+import * as assert from "assert"
+import * as readline from "readline"
+import { question } from "./utils"
 
-class Base {
-  constructor(...paths) {
+export interface FileJson {
+  basename: string;
+  children: null;
+}
+
+export interface DirJson {
+  basename: string;
+  children: (FileJson | DirJson)[];
+}
+
+export class Base {
+  originData: string[];
+
+  constructor(...paths: string[]) {
     this.originData = [...paths]
   }
 
@@ -40,40 +54,38 @@ class Base {
     return this.stat && this.stat.isDirectory()
   }
 
+  asFile() {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    return new File(this.path)
+  }
+
+  asDir() {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    return new Dir(this.path)
+  }
+
   createAsDir() {
     if (!this.isDir) {
       fs.mkdirSync(this.path, { recursive: true })
     }
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     return new Dir(this.path)
   }
 
   createAsFile() {
     this.parent.createAsDir()
     fs.writeFileSync(this.path, "", { flag: "a" })
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     return new File(this.path)
   }
 
-  sibling(basename) {
+  sibling(basename: string) {
     return new Base(path.join(this.dirname, basename))
   }
-
-  // 感觉没什么用，暂时撤下
-  // static fromJsonData(obj) {
-  //   const oldCwd = process.cwd()
-  //   if (obj.children) {
-  //     new Base(obj.basename).createAsDir()
-  //     process.chdir(obj.basename)
-  //     obj.children.forEach(child => Base.fromJsonData(child))
-  //     process.chdir(oldCwd)
-  //     return new Dir(obj.basename)
-  //   } else {
-  //     return new Base(obj.basename).createAsFile()
-  //   }
-  // }
 }
 
-class File extends Base {
-  constructor(...paths) {
+export class File extends Base {
+  constructor(...paths: string[]) {
     super(...paths)
     assert(this.isFile, `${this.path} is not file`)
   }
@@ -87,24 +99,30 @@ class File extends Base {
   }
 
   get parent() {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     return new Dir(this.dirname)
   }
 
-  read(encoding="utf8") {
+  read(encoding = "utf8") {
     return fs.readFileSync(this.path, {
       encoding,
       flag: "r",
     })
   }
 
-  async handleLineByLine(func) {
+  /**
+   * 逐行处理文件
+   */
+  async handleLineByLine(func: (lineStr: string, lineIdx: number, close: () => void) => void): Promise<void> {
     const rl = readline.createInterface({
       input: fs.createReadStream(this.path),
       crlfDelay: Infinity,
     })
     let doContinue = true
+    // eslint-disable-next-line no-return-assign
     const close = () => doContinue = false
     let lineIdx = 0
+    // eslint-disable-next-line no-restricted-syntax
     for await (const line of rl) {
       if (doContinue) {
         func(line, lineIdx, close)
@@ -115,35 +133,45 @@ class File extends Base {
     }
   }
 
-  async handleEveryLine(func) {
+  /**
+   * 对文件的每一行执行相同的处理
+   */
+  async handleEveryLine(func: (lineStr: string, lineIdx: number) => void): Promise<void> {
     const rl = readline.createInterface({
       input: fs.createReadStream(this.path),
       crlfDelay: Infinity,
     })
     let lineIdx = 0
+    // eslint-disable-next-line no-restricted-syntax
     for await (const line of rl) {
       func(line, lineIdx)
       lineIdx += 1
     }
   }
 
-  __write(content, flag="w", encoding="utf8") {
+  private __write(content: string, flag = "w", encoding = "utf8") {
     fs.writeFileSync(this.path, content, {
       encoding,
       flag,
     })
     return this
   }
-  
-  write(content, encoding) {
+
+  /**
+   * 覆盖式写入
+   */
+  write(content: string, encoding: string) {
     return this.__write(content, "w", encoding)
   }
 
-  aWrite(content, encoding) {
+  /**
+   * 尾添加式写入
+   */
+  aWrite(content: string, encoding: string) {
     return this.__write(content, "a", encoding)
   }
 
-  moveTo(newPath) {
+  moveTo(newPath: string) {
     new Base(newPath).parent.createAsDir()
     fs.renameSync(this.path, newPath)
     this.originData = [newPath]
@@ -155,7 +183,7 @@ class File extends Base {
     return new Base(this.path)
   }
 
-  toJsonData() {
+  toJsonData(): FileJson {
     return {
       basename: this.basename,
       children: null,
@@ -163,18 +191,34 @@ class File extends Base {
   }
 }
 
-class Dir extends Base {
-  constructor(...paths) {
+export class Json extends File {
+  readSync(encoding = "utf8") {
+    const data = fs.readFileSync(this.path, { encoding })
+    return JSON.parse(data)
+  }
+
+  writeSync(data: any, space = 0, encoding = "utf8") {
+    let str = ""
+    if (typeof data === "string") {
+      str = data
+    } else {
+      str = JSON.stringify(data, null, space)
+    }
+    fs.writeFileSync(this.path, str, { encoding })
+    return this
+  }
+}
+
+export class Dir extends Base {
+  suffix = ""
+
+  constructor(...paths: string[]) {
     super(...paths)
     assert(this.isDir, `${this.path} is not dir`)
   }
 
   get name() {
     return this.basename
-  }
-
-  get suffix() {
-    return ""
   }
 
   get parent() {
@@ -186,28 +230,28 @@ class Dir extends Base {
   }
 
   get files() {
-    return this.rawChildren.map(name => {
+    return this.rawChildren.map((name) => {
       try {
         return new File(path.join(this.path, name))
       } catch (err) {
         return null
       }
-    }).filter(f => !!f)
+    }).filter((f) => !!f)
   }
 
   get dirs() {
-    return this.rawChildren.map(name => {
+    return this.rawChildren.map((name) => {
       try {
         return new Dir(path.join(this.path, name))
       } catch (err) {
         return null
       }
-    }).filter(d => !!d)
+    }).filter((d) => !!d)
   }
 
   get allFiles() {
     const files = [...this.files]
-    this.allDirs.forEach(dir => {
+    this.allDirs.forEach((dir) => {
       files.push(...dir.files)
     })
     // 不用递归，防止爆栈
@@ -220,7 +264,7 @@ class Dir extends Base {
   get allDirs() {
     const dirs = [...this.dirs]
     let curIdx = 0
-    while(curIdx < dirs.length) { // 这儿利用的就是 [].length 动态获取长度
+    while (curIdx < dirs.length) { // 这儿利用的就是 [].length 动态获取长度
       dirs.push(...dirs[curIdx].dirs)
       curIdx += 1
     }
@@ -232,23 +276,23 @@ class Dir extends Base {
   }
 
   get fileNames() {
-    return this.files.map(f => f.basename)
+    return this.files.map((f) => f.basename)
   }
 
   get dirNames() {
-    return this.dirs.map(d => d.basename)
+    return this.dirs.map((d) => d.basename)
   }
 
-  moveTo(newPath) {
+  moveTo(newPath: string) {
     new Base(newPath).parent.createAsDir()
     fs.renameSync(this.path, newPath)
     this.originData = [newPath]
     return this
   }
 
-  remove(defaultPrompt) {
+  remove(defaultPrompt?: string) {
     return new Promise((resolve, reject) => {
-      question(`将会删除【${this.path}】整个目录及其子目录, 是否确定[y / n]?`, defaultPrompt).then(ans => {
+      question(`将会删除【${this.path}】整个目录及其子目录, 是否确定[y / n]?`, defaultPrompt).then((ans) => {
         if (ans.toLowerCase() === "y") {
           fs.rmdirSync(this.path, {
             recursive: true,
@@ -267,130 +311,17 @@ class Dir extends Base {
     return new Base(this.path)
   }
 
-  toJsonData() {
-    const result = {
+  toJsonData(): DirJson {
+    const result: DirJson = {
       basename: this.basename,
       children: [],
     }
-    this.files.forEach(f => {
+    this.files.forEach((f) => {
       result.children.push(f.toJsonData())
     })
-    this.dirs.forEach(d => {
+    this.dirs.forEach((d) => {
       result.children.push(d.toJsonData())
     })
     return result
   }
-}
-
-class Json extends File {
-  constructor(...paths) {
-    super(...paths)
-  }
-
-  readSync(encoding="utf8") {
-    const data = fs.readFileSync(this.path, { encoding })
-    return JSON.parse(data)
-  }
-
-  writeSync(data, space=0, encoding="utf8") {
-    let str = ""
-    if (typeof(data) === "string") {
-      str = data
-    } else {
-      str = JSON.stringify(data, null, space)
-    }
-    fs.writeFileSync(this.path, str, { encoding })
-    return this
-  }
-}
-
-function isEmpty(s) {
-  return s === null || s === undefined
-}
-
-function __queryInput(queryStr) {
-  return new Promise((resolve, reject) => {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-    })
-
-    rl.question(queryStr, (answer) => {
-      resolve(answer)
-      rl.close()
-    });
-  })
-}
-
-async function question(queryStr, defaultValue) {
-  const noDefaultValue = isEmpty(defaultValue)
-  const prompt = noDefaultValue ? queryStr : `${queryStr}, 缺省值【${defaultValue}】: `
-  const inputStr = await __queryInput(prompt)
-
-  if (noDefaultValue) { // 无默认值
-    if (inputStr === "") {
-      return question(queryStr)
-    } else {
-      return inputStr
-    }
-  } else { // 有默认值
-    if (inputStr === "") {
-      return defaultValue
-    } else {
-      return inputStr
-    }
-  }
-}
-
-async function questionUntil(queryStr, f) {
-  const inputStr = await question(queryStr)
-  if (f(inputStr)) {
-    return inputStr
-  }
-  return questionUntil(queryStr, f)
-}
-
-function questionNumber(queryStr, defaultValue) {
-  assert(
-    isEmpty(defaultValue) || (typeof(defaultValue) === "number"),
-    `${defaultValue} is not number`
-  )
-  const defaultStr = isEmpty(defaultValue) ? undefined : `${defaultValue}`
-
-  return new Promise(async (resolve, reject) => {
-    let input = ""
-    while(!/^[\+\-]?\d+(\.\d+)?$/.test(input)) {
-      input = await question(queryStr, defaultStr)
-    }
-    resolve(+input)
-  })
-}
-
-function refreshProp(obj, propName) {
-  const newProp = JSON.parse(JSON.stringify(obj[propName]))
-  delete(obj[propName])
-  obj[propName] = newProp
-}
-
-function enumerate(arr) {
-  return arr.map((item, i) => [item, i])
-}
-
-async function forRun(arr, func) {
-  for (let i = 0, len = arr.length; i < len; i++) {
-    await func(arr[i], i, arr)
-  }
-}
-
-module.exports = {
-  Base,
-  File,
-  Dir,
-  Json,
-  question,
-  questionUntil,
-  questionNumber,
-  refreshProp,
-  enumerate,
-  forRun,
 }
