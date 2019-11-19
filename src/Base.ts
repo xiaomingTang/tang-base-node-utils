@@ -194,6 +194,9 @@ export class File extends Base {
 export class Json extends File {
   readSync(encoding = "utf8") {
     const data = fs.readFileSync(this.path, { encoding })
+    if (data.trim() === "") {
+      return null
+    }
     return JSON.parse(data)
   }
 

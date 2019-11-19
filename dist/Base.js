@@ -203,6 +203,9 @@ exports.File = File;
 class Json extends File {
     readSync(encoding = "utf8") {
         const data = fs.readFileSync(this.path, { encoding });
+        if (data.trim() === "") {
+            return null;
+        }
         return JSON.parse(data);
     }
     writeSync(data, space = 0, encoding = "utf8") {
