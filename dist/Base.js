@@ -311,20 +311,20 @@ class Dir extends Base {
         });
         return new Base(this.path);
     }
-    toJsonData(filter) {
+    toJsonData(filterChildrenDirs) {
         const result = {
             basename: this.basename,
             children: [],
         };
-        if (filter instanceof Function) {
+        if (filterChildrenDirs instanceof Function) {
             this.files.forEach((f) => {
-                if (filter(f)) {
+                if (filterChildrenDirs(f)) {
                     result.children.push(f.toJsonData());
                 }
             });
             this.dirs.forEach((d) => {
-                if (filter(d)) {
-                    result.children.push(d.toJsonData());
+                if (filterChildrenDirs(d)) {
+                    result.children.push(d.toJsonData(filterChildrenDirs));
                 }
             });
         }

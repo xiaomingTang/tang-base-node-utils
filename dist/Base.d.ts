@@ -71,5 +71,5 @@ export declare class Dir extends Base {
     moveTo(newPath: string): this;
     remove(defaultPrompt?: string): Promise<unknown>;
     dangerousRemoveWithoutEnsure(): Base;
-    toJsonData(filter?: Filter): DirJson;
+    toJsonData(filterChildrenDirs?: Filter): DirJson;
 }
