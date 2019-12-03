@@ -8,6 +8,7 @@ export interface DirJson {
     basename: string;
     children: (FileJson | DirJson)[];
 }
+export declare type Filter = (item: File | Dir) => boolean;
 export declare class Base {
     originData: string[];
     constructor(...paths: string[]);
@@ -70,5 +71,5 @@ export declare class Dir extends Base {
     moveTo(newPath: string): this;
     remove(defaultPrompt?: string): Promise<unknown>;
     dangerousRemoveWithoutEnsure(): Base;
-    toJsonData(): DirJson;
+    toJsonData(filter?: Filter): DirJson;
 }

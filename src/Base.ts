@@ -15,6 +15,8 @@ export interface DirJson {
   children: (FileJson | DirJson)[];
 }
 
+export type Filter = (item: File | Dir) => boolean
+
 export class Base {
   originData: string[];
 
@@ -314,17 +316,30 @@ export class Dir extends Base {
     return new Base(this.path)
   }
 
-  toJsonData(): DirJson {
+  toJsonData(filter?: Filter): DirJson {
     const result: DirJson = {
       basename: this.basename,
       children: [],
     }
-    this.files.forEach((f) => {
-      result.children.push(f.toJsonData())
-    })
-    this.dirs.forEach((d) => {
-      result.children.push(d.toJsonData())
-    })
+    if (filter instanceof Function) {
+      this.files.forEach((f) => {
+        if (filter(f)) {
+          result.children.push(f.toJsonData())
+        }
+      })
+      this.dirs.forEach((d) => {
+        if (filter(d)) {
+          result.children.push(d.toJsonData())
+        }
+      })
+    } else {
+      this.files.forEach((f) => {
+        result.children.push(f.toJsonData())
+      })
+      this.dirs.forEach((d) => {
+        result.children.push(d.toJsonData())
+      })
+    }
     return result
   }
 }
