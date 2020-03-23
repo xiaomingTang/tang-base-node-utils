@@ -43,11 +43,11 @@ export declare class File extends Base {
     /**
      * 覆盖式写入
      */
-    write(content: string, encoding: string): this;
+    write(content: string, encoding?: string): this;
     /**
      * 尾添加式写入
      */
-    aWrite(content: string, encoding: string): this;
+    aWrite(content: string, encoding?: string): this;
     moveTo(newPath: string): this;
     remove(): Base;
     toJsonData(): FileJson;

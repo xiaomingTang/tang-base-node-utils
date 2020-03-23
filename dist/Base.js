@@ -173,13 +173,13 @@ class File extends Base {
     /**
      * 覆盖式写入
      */
-    write(content, encoding) {
+    write(content, encoding = "utf8") {
         return this.__write(content, "w", encoding);
     }
     /**
      * 尾添加式写入
      */
-    aWrite(content, encoding) {
+    aWrite(content, encoding = "utf8") {
         return this.__write(content, "a", encoding);
     }
     moveTo(newPath) {

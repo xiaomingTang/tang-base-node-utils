@@ -162,14 +162,14 @@ export class File extends Base {
   /**
    * 覆盖式写入
    */
-  write(content: string, encoding: string) {
+  write(content: string, encoding = "utf8") {
     return this.__write(content, "w", encoding)
   }
 
   /**
    * 尾添加式写入
    */
-  aWrite(content: string, encoding: string) {
+  aWrite(content: string, encoding = "utf8") {
     return this.__write(content, "a", encoding)
   }
 
