@@ -5,6 +5,12 @@
   "main": "./dist/index.js",
   "author": "1038761793@qq.com",
   "license": "MIT",
+  "files": [
+    "README.md",
+    "tsconfig.json",
+    "dist/",
+    "src/"
+  ],
   "scripts": {
     "eslint": "eslint src --ext .js --ext .ts",
     "eslint:fix": "eslint --fix src --ext .js --ext .ts",

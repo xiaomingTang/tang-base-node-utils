@@ -40,7 +40,7 @@ export class Base {
     return new Base(this.dirname)
   }
 
-  get stat() {
+  get stat(): fs.Stats | null {
     try {
       return fs.statSync(this.path)
     } catch (err) {
@@ -48,11 +48,11 @@ export class Base {
     }
   }
 
-  get isFile() {
+  get isFile(): boolean {
     return this.stat && this.stat.isFile()
   }
 
-  get isDir() {
+  get isDir(): boolean {
     return this.stat && this.stat.isDirectory()
   }
 
@@ -83,6 +83,10 @@ export class Base {
 
   sibling(basename: string) {
     return new Base(path.join(this.dirname, basename))
+  }
+
+  relativeTo(...p: string[]): string {
+    return path.relative(this.path, new Base(...p).path)
   }
 }
 
@@ -173,10 +177,11 @@ export class File extends Base {
     return this.__write(content, "a", encoding)
   }
 
-  moveTo(newPath: string) {
-    new Base(newPath).parent.createAsDir()
-    fs.renameSync(this.path, newPath)
-    this.originData = [newPath]
+  moveTo(...paths: string[]) {
+    const newBase = new Base(...paths)
+    newBase.parent.createAsDir()
+    fs.renameSync(this.path, newBase.path)
+    this.originData = paths
     return this
   }
 
@@ -194,6 +199,9 @@ export class File extends Base {
 }
 
 export class Json extends File {
+  /**
+   * read as json, or throw Error
+   */
   readSync(encoding = "utf8") {
     const data = fs.readFileSync(this.path, { encoding })
     if (data.trim() === "") {
@@ -202,6 +210,9 @@ export class Json extends File {
     return JSON.parse(data)
   }
 
+  /**
+   * write as json
+   */
   writeSync(data: any, space = 0, encoding = "utf8") {
     let str = ""
     if (typeof data === "string") {
@@ -234,24 +245,24 @@ export class Dir extends Base {
     return fs.readdirSync(this.path)
   }
 
-  get files() {
+  get files(): File[] {
     return this.rawChildren.map((name) => {
       try {
-        return new File(path.join(this.path, name))
+        return new File(this.path, name)
       } catch (err) {
         return null
       }
-    }).filter((f) => !!f)
+    }).filter(Boolean)
   }
 
-  get dirs() {
+  get dirs(): Dir[] {
     return this.rawChildren.map((name) => {
       try {
-        return new Dir(path.join(this.path, name))
+        return new Dir(this.path, name)
       } catch (err) {
         return null
       }
-    }).filter((d) => !!d)
+    }).filter(Boolean)
   }
 
   get allFiles() {
@@ -288,10 +299,11 @@ export class Dir extends Base {
     return this.dirs.map((d) => d.basename)
   }
 
-  moveTo(newPath: string) {
-    new Base(newPath).parent.createAsDir()
-    fs.renameSync(this.path, newPath)
-    this.originData = [newPath]
+  moveTo(...paths: string[]) {
+    const newBase = new Base(...paths)
+    newBase.parent.createAsDir()
+    fs.renameSync(this.path, newBase.path)
+    this.originData = paths
     return this
   }
 

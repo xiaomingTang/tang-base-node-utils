@@ -72,7 +72,17 @@ function enumerate<T>(arr: T[]): [T, number][] {
   return arr.map((item, i) => [item, i])
 }
 
-async function forRun<T>(arr: T[], func: (value: T, index: number, array: T[]) => void): Promise<void> {
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve()
+    }, ms)
+  })
+}
+
+type Func<T> = (value: T, index: number, arr: T[]) => void | Promise<void>
+
+async function forRun<T>(arr: T[], func: Func<T>): Promise<void> {
   for (let i = 0, len = arr.length; i < len; i += 1) {
     await func(arr[i], i, arr)
   }
@@ -84,5 +94,6 @@ export {
   questionNumber,
   refreshProp,
   enumerate,
+  delay,
   forRun,
 }
