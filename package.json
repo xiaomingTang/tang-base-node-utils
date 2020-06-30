@@ -18,7 +18,11 @@
     "node": "node ./dist/index.js",
     "dev": "nodemon ./src/index.ts",
     "start": "yarn run dev",
-    "test": "mocha -r ts-node/register test/*.ts"
+    "test": "mocha -r ts-node/register test/*.ts",
+    "reg:taobao": "npm config set registry https://registry.npm.taobao.org",
+    "reg:npm": "npm config set registry https://registry.npmjs.org/",
+    "proxy": "npm config set proxy http://127.0.0.1:57102 && npm config set https-proxy https://127.0.0.1:57102",
+    "proxy:rm": "npm config delete proxy && npm config delete https-proxy"
   },
   "dependencies": {},
   "devDependencies": {
