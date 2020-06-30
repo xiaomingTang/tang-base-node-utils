@@ -109,7 +109,7 @@ export class File extends Base {
     return new Dir(this.dirname)
   }
 
-  read(encoding = "utf8") {
+  read(encoding: BufferEncoding = "utf-8") {
     return fs.readFileSync(this.path, {
       encoding,
       flag: "r",
@@ -155,7 +155,7 @@ export class File extends Base {
     }
   }
 
-  private __write(content: string, flag = "w", encoding = "utf8") {
+  private __write(content: string, flag = "w", encoding: BufferEncoding = "utf-8") {
     fs.writeFileSync(this.path, content, {
       encoding,
       flag,
@@ -166,14 +166,14 @@ export class File extends Base {
   /**
    * 覆盖式写入
    */
-  write(content: string, encoding = "utf8") {
+  write(content: string, encoding: BufferEncoding = "utf-8") {
     return this.__write(content, "w", encoding)
   }
 
   /**
    * 尾添加式写入
    */
-  aWrite(content: string, encoding = "utf8") {
+  aWrite(content: string, encoding: BufferEncoding = "utf-8") {
     return this.__write(content, "a", encoding)
   }
 
