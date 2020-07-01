@@ -202,7 +202,7 @@ export class Json extends File {
   /**
    * read as json, or throw Error
    */
-  readSync(encoding = "utf8") {
+  readSync(encoding: BufferEncoding = "utf-8") {
     const data = fs.readFileSync(this.path, { encoding })
     if (data.trim() === "") {
       return null
@@ -213,7 +213,7 @@ export class Json extends File {
   /**
    * write as json
    */
-  writeSync(data: any, space = 0, encoding = "utf8") {
+  writeSync(data: any, space = 0, encoding: BufferEncoding = "utf-8") {
     let str = ""
     if (typeof data === "string") {
       str = data
