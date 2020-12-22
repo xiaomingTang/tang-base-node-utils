@@ -1,9 +1,10 @@
+/* eslint-disable class-methods-use-this */
 /* eslint-disable max-classes-per-file */
 import * as fs from "fs"
 import * as path from "path"
 import * as assert from "assert"
 import * as readline from "readline"
-import { question } from "./utils"
+import { questionBoolean } from "./utils"
 
 export interface FileJson {
   basename: string;
@@ -28,12 +29,35 @@ export class Base {
     return path.resolve(...this.originData)
   }
 
+  /**
+   * 父目录的路径
+   */
   get dirname() {
     return path.dirname(this.path)
   }
 
+  /**
+   * 文件名, 包括后缀
+   */
   get basename() {
     return path.basename(this.path)
+  }
+
+  /**
+   * 文件名, 不包括后缀
+   *
+   * Base 与 Dir 中, 后缀为空
+   *
+   * File 中才有后缀
+   *
+   * 所以 Base 与 Dir 中, basename 与 name 相等
+   */
+  get name() {
+    return this.basename
+  }
+
+  get suffix() {
+    return ""
   }
 
   get parent() {
@@ -66,6 +90,13 @@ export class Base {
     return new Dir(this.path)
   }
 
+  createAsFile() {
+    this.parent.createAsDir()
+    fs.writeFileSync(this.path, "", { flag: "a" })
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    return new File(this.path)
+  }
+
   createAsDir() {
     if (!this.isDir) {
       fs.mkdirSync(this.path, { recursive: true })
@@ -74,15 +105,16 @@ export class Base {
     return new Dir(this.path)
   }
 
-  createAsFile() {
-    this.parent.createAsDir()
-    fs.writeFileSync(this.path, "", { flag: "a" })
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    return new File(this.path)
+  childOf(...basename: string[]) {
+    return new Base(path.join(this.path, ...basename))
   }
 
-  sibling(basename: string) {
-    return new Base(path.join(this.dirname, basename))
+  siblingOf(...basename: string[]) {
+    return new Base(path.join(this.dirname, ...basename))
+  }
+
+  relativeFrom(...p: string[]) {
+    return path.relative(new Base(...p).path, this.path)
   }
 
   relativeTo(...p: string[]): string {
@@ -226,15 +258,9 @@ export class Json extends File {
 }
 
 export class Dir extends Base {
-  suffix = ""
-
   constructor(...paths: string[]) {
     super(...paths)
     assert(this.isDir, `${this.path} is not dir`)
-  }
-
-  get name() {
-    return this.basename
   }
 
   get parent() {
@@ -307,16 +333,17 @@ export class Dir extends Base {
     return this
   }
 
-  remove(defaultPrompt?: string) {
+  remove(defaultInput?: boolean) {
     return new Promise((resolve, reject) => {
-      question(`将会删除【${this.path}】整个目录及其子目录, 是否确定[y / n]?`, defaultPrompt).then((ans) => {
-        if (ans.toLowerCase() === "y") {
+      questionBoolean(`将会删除【${this.path}】整个目录及其子目录`, defaultInput).then((ans) => {
+        if (ans) {
           fs.rmdirSync(this.path, {
             recursive: true,
           })
           resolve(new Base(this.path))
+        } else {
+          reject(new Error("您手动取消了删除目录"))
         }
-        reject(new Error("您手动取消了删除目录"))
       })
     })
   }
@@ -354,4 +381,17 @@ export class Dir extends Base {
     }
     return result
   }
+}
+
+export function getInputFiles() {
+  const files: File[] = []
+  process.argv.slice(2).forEach((arg) => {
+    const base = new Base(arg)
+    if (base.isFile) {
+      files.push(base.asFile())
+    } else if (base.isDir) {
+      files.push(...base.asDir().allFiles)
+    }
+  })
+  return files
 }

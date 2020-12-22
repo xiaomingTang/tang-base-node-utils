@@ -2,6 +2,7 @@ import {
   question,
   questionUntil,
   questionNumber,
+  questionBoolean,
   Dir,
 } from "../src/index"
 
@@ -35,6 +36,13 @@ async function questionTest() {
   while (closeFlagC !== 99) {
     closeFlagC = await questionNumber("只有合法数字输入才是有效输入: ")
     console.log(`有效输入: 【${closeFlagC}】`)
+  }
+
+  let closeFlagD = false
+  importantLog("开始测试 questionBoolean 函数，输入 Y/y 结束该段测试")
+  while (!closeFlagD) {
+    closeFlagD = await questionBoolean("输入 Y/y 结束测试", false)
+    console.log(`有效输入: ${closeFlagD}`)
   }
 }
 
